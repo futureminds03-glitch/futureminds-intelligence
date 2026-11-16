@@ -13,7 +13,7 @@ class AgentTaskEvidenceWorkflowTests(unittest.TestCase):
     def test_uses_trusted_workflow_run_trigger(self):
         self.assertIn("workflow_run:", self.content)
         self.assertIn('workflows: ["Evaluation foundation checks"]', self.content)
-        self.assertIn("startsWith(github.event.workflow_run.head_branch, 'agent-task/')", self.content)
+        self.assertIn("github.event.workflow_run.conclusion == 'success'", self.content)
 
     def test_checks_out_only_trusted_default_branch(self):
         self.assertIn("ref: ${{ github.event.repository.default_branch }}", self.content)
@@ -31,8 +31,12 @@ class AgentTaskEvidenceWorkflowTests(unittest.TestCase):
 
     def test_resolves_pr_by_exact_completed_commit(self):
         self.assertIn("/commits/$SOURCE_SHA/pulls?per_page=10", self.content)
-        self.assertIn("select(.head.sha == $sha)", self.content)
+        self.assertIn(".head.sha == $sha", self.content)
+        self.assertIn(".head.ref | startswith(\"agent-task/\")", self.content)
+        self.assertIn("steps.resolve.outputs.pr_number != ''", self.content)
         self.assertNotIn("pull_requests[0]", self.content)
+        self.assertNotIn("workflow_run.head_branch", self.content)
+        self.assertNotIn("workflow_run.head_repository", self.content)
 
 
     def test_passes_contract_required_checks_to_evidence_adapter(self):
