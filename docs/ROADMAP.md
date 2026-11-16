@@ -15,13 +15,15 @@ Each phase has an acceptance gate. Do not mark a phase complete from implementat
 
 ## Phase 1 — Agent evaluation pilot
 
-- Define a narrow coding-task contract.
-- Capture repository revision, changed-file inventory and test results.
-- Compare agent completion claims with independently retrieved evidence.
-- Preserve known failure cases.
-- Measure false passes, false failures and human review effort.
+- [x] Define a versioned, bounded coding-task contract with explicit acceptance criteria and execution restrictions.
+- [x] Add deterministic contract validation and a task-evaluation CLI that reuses the shared grading engine.
+- [x] Add synthetic passing, failing and missing-evidence fixtures to prove status behavior.
+- [ ] Collect and authenticate repository revision, changed-file inventory and CI/test results from trusted GitHub sources.
+- [ ] Compare a real agent completion claim with independently retrieved evidence.
+- [ ] Preserve confirmed real-world failures as regression cases.
+- [ ] Measure false passes, false failures and human review effort.
 
-**Exit gate:** demonstrate a meaningful unsupported claim or regression caught by the evaluator.
+**Exit gate:** demonstrate a meaningful unsupported claim or regression caught by the evaluator using independently authenticated evidence from a real bounded agent task. Synthetic fixtures do not satisfy this gate.
 
 ## Phase 2 — CI and regression intelligence
 
