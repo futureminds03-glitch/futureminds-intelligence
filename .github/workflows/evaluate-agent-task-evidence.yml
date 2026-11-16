@@ -95,14 +95,19 @@ jobs:
           retention-days: 14
 
       - name: Publish task evaluation status
-        if: always() && steps.resolve.outputs.pr_number != ''
+        if: always() && github.event.workflow_run.head_repository.full_name == github.repository
         shell: bash
         env:
           GITHUB_TOKEN: ${{ github.token }}
           SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           STATUS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
+          case "$HEAD_BRANCH" in
+            *agent-task/*) ;;
+            *) echo "Not an agent-task branch; no task status to publish."; exit 0 ;;
+          esac
           report="blocked"
           if [ -f evidence/task-evaluation-report.json ]; then
             report="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["status"])' evidence/task-evaluation-report.json)"
