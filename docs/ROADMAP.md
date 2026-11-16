@@ -29,6 +29,8 @@ Each phase has an acceptance gate. Do not mark a phase complete from implementat
 ## Phase 2 — CI and regression intelligence
 
 - [x] Propose and document the isolated agent execution trust zones, patch gate, credential separation and rollout gates. This is a design only; no sandbox or agent execution is enabled.
+- [x] Implement Gate A offline patch manifest validation with adversarial tests for base-SHA mismatch, path traversal, allowlist escape, symlinks, protected paths, unlisted files, hash/size mismatch and path collisions.
+- [ ] Prove atomic patch application to a clean checkout of the approved base revision; the current validator does not apply patches.
 
 - Integrate selected repositories through least-privilege GitHub access.
 - Run deterministic evaluations on pull requests.
