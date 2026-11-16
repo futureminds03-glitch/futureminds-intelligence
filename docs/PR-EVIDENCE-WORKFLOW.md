@@ -4,7 +4,7 @@
 
 ## Trigger
 
-The workflow runs after a successful `Evaluation foundation checks` workflow for a same-repository branch whose name starts with `agent-task/`. It uses the GitHub `workflow_run` event and checks out only the trusted default branch. It never checks out or executes the triggering PR head.
+The workflow runs after a successful `Evaluation foundation checks` workflow. It resolves the pull request by querying GitHub for the exact completed head SHA, then selects only a same-repository PR whose branch starts with `agent-task/`. If no matching PR exists (for example, a push to main), the task-evaluation steps are skipped. It checks out only the trusted default branch and never checks out or executes the triggering PR head.
 
 ## Evidence collection
 
