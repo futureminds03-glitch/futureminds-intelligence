@@ -10,8 +10,8 @@ class PrEvidenceWorkflowDocumentationTests(unittest.TestCase):
 
     def test_missing_or_ambiguous_required_checks_cannot_pass(self):
         content = Path("docs/PR-EVIDENCE-WORKFLOW.md").read_text(encoding="utf-8")
-        self.assertIn("missing or ambiguous", content)
-        self.assertIn("still running", content)
+        self.assertIn("absent, still running", content)
+        self.assertIn("ambiguous", content)
 
     def test_evaluator_does_not_grade_its_own_concurrent_run(self):
         content = Path("docs/PR-EVIDENCE-WORKFLOW.md").read_text(encoding="utf-8")
