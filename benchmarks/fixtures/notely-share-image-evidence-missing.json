@@ -1,0 +1,7 @@
+{
+  "source_revision": "0123456789abcdef0123456789abcdef01234567",
+  "changed_files": "src/components/NoteShare.tsx",
+  "ci_status": "success",
+  "unit_test_result": "success: 42 tests passed",
+  "agent_completion_summary": "Implemented branded note image export."
+}
