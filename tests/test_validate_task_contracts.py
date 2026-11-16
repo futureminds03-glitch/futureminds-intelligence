@@ -46,6 +46,22 @@ class ValidateTaskContractTests(unittest.TestCase):
     def test_accepts_valid_contract(self):
         self.assertEqual(validate_contract(self.write_contract(VALID_CONTRACT)), [])
 
+
+    def test_accepts_unique_required_ci_check_names(self):
+        data = json.loads(json.dumps(VALID_CONTRACT))
+        data["required_ci_check_names"] = ["Unit tests", "Lint"]
+        self.assertEqual(validate_contract(self.write_contract(data)), [])
+
+    def test_rejects_duplicate_required_ci_check_names(self):
+        data = json.loads(json.dumps(VALID_CONTRACT))
+        data["required_ci_check_names"] = ["Unit tests", "Unit tests"]
+        self.assertTrue(any("must be unique" in e for e in validate_contract(self.write_contract(data))))
+
+    def test_rejects_empty_required_ci_check_names(self):
+        data = json.loads(json.dumps(VALID_CONTRACT))
+        data["required_ci_check_names"] = [""]
+        self.assertTrue(any("required_ci_check_names" in e for e in validate_contract(self.write_contract(data))))
+
     def test_rejects_boolean_task_version(self):
         data = json.loads(json.dumps(VALID_CONTRACT))
         data["task_version"] = True
