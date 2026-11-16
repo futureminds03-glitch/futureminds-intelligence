@@ -83,3 +83,25 @@ The task-evaluation fixtures demonstrate `passed`, `failed`, and `blocked` outco
 - `partially_verified`: some evidence exists, but the complete acceptance set is not satisfied.
 
 A green summary never overrides a failed mandatory security or release gate.
+
+
+### Collect evidence from a real pull request (read-only)
+
+For a pull request in a repository the token can read:
+
+```bash
+export GITHUB_TOKEN="<read-only GitHub token>"
+python -m scripts.collect_pr_task_evidence \
+  --repository owner/repository \
+  --pull-request 123 \
+  --output evidence/pr-task-evidence.json
+
+python -m scripts.run_task_eval \
+  --contract benchmarks/task-contracts/notely-branded-share-image.v1.json \
+  --evidence evidence/pr-task-evidence.json \
+  --output evidence/task-evaluation-report.json
+```
+
+Use a fine-grained token restricted to the target repository with **Metadata: read**, **Pull requests: read**, and **Checks: read**. Never use a write token for evidence collection. The adapter retrieves the PR head SHA, complete changed-file inventory and check runs from GitHub's API. It refuses potentially truncated API results. It reports CI/unit/feature checks as missing unless matching checks are completed; missing evidence is not a pass.
+
+The PR body may include a `## Agent completion summary` section. That text is retained as an agent claim, explicitly marked unverified. The adapter does not execute code, inspect rendered UI, prove application behavior, or grant repository write access. The token is read from the environment and is never printed or written into the report.
