@@ -36,3 +36,5 @@ A `passed` result means the evidence assertions in this reference contract passe
 Use `agent-task/<short-task-name>` for PRs that should enter this reference evidence pipeline. The workflow currently uses one generic benchmark contract for demonstration; task-specific contract selection and authenticated tool-trace evidence are future work.
 
 The contract declares exact `required_ci_check_names`. Only those named checks contribute to the task's required CI/unit-test grade. This prevents the evidence collector's own in-progress check (and unrelated concurrent workflows) from contaminating its result. A missing or ambiguous required check remains blocked; the workflow does not silently broaden the allowlist.
+
+The workflow publishes a separate `FutureMinds Intelligence / Agent task discovery` status so PR resolution failures are visible instead of silently skipping the final task-evidence status. A resolved PR begins as pending; missing eligibility is marked not applicable; resolution errors are surfaced for investigation.
