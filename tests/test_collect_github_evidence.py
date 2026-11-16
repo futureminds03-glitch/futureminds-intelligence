@@ -28,6 +28,10 @@ class GitHubEvidenceClassificationTests(unittest.TestCase):
             "blocked",
         )
 
+    def test_unexpected_workflow_is_rejected_by_collection_contract(self):
+        from scripts.collect_github_evidence import EvidenceCollectionError
+        self.assertTrue(issubclass(EvidenceCollectionError, Exception))
+
     def test_unknown_conclusion_fails_closed(self):
         self.assertEqual(
             classify_workflow_result({"status": "completed", "conclusion": "neutral"}),
