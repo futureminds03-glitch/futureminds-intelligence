@@ -18,7 +18,8 @@ Each phase has an acceptance gate. Do not mark a phase complete from implementat
 - [x] Define a versioned, bounded coding-task contract with explicit acceptance criteria and execution restrictions.
 - [x] Add deterministic contract validation and a task-evaluation CLI that reuses the shared grading engine.
 - [x] Add synthetic passing, failing and missing-evidence fixtures to prove status behavior.
-- [ ] Collect and authenticate repository revision, changed-file inventory and CI/test results from trusted GitHub sources.
+- [x] Implement a read-only GitHub PR adapter for authenticated revision, changed-file inventory and completed check evidence (mocked API tests pass).
+- [ ] Run the adapter against an actual target-product PR and inspect the resulting evidence report.
 - [ ] Compare a real agent completion claim with independently retrieved evidence.
 - [ ] Preserve confirmed real-world failures as regression cases.
 - [ ] Measure false passes, false failures and human review effort.
@@ -26,6 +27,8 @@ Each phase has an acceptance gate. Do not mark a phase complete from implementat
 **Exit gate:** demonstrate a meaningful unsupported claim or regression caught by the evaluator using independently authenticated evidence from a real bounded agent task. Synthetic fixtures do not satisfy this gate.
 
 ## Phase 2 — CI and regression intelligence
+
+- [x] Propose and document the isolated agent execution trust zones, patch gate, credential separation and rollout gates. This is a design only; no sandbox or agent execution is enabled.
 
 - Integrate selected repositories through least-privilege GitHub access.
 - Run deterministic evaluations on pull requests.

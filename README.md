@@ -39,6 +39,7 @@ A modular monolith first; no microservices until measured needs justify them.
 - `docs/ARCHITECTURE.md` — system boundaries and initial technical design.
 - `docs/ROADMAP.md` — staged delivery plan and acceptance gates.
 - `docs/SECURITY.md` — security baseline and threat model.
+- `docs/AGENT-EXECUTION-BOUNDARY.md` — proposed isolation, patch-gate and credential-boundary design for future coding-agent execution.
 - `docs/ADR/` — architecture decision records.
 - `evals/` — versioned evaluation cases and fixtures.
 - `packages/` — application and engine code (introduced incrementally).
