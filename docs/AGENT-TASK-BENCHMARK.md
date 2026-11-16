@@ -23,6 +23,22 @@ The first reference contract is `benchmarks/task-contracts/notely-branded-share-
 - Allowed paths and forbidden actions: scope boundaries.
 - Required evidence and acceptance criteria: explicit, machine-checkable completion conditions.
 
+## Run the reference benchmark
+
+The task contract can be evaluated against a structured evidence JSON document:
+
+```bash
+python -m scripts.run_task_eval --contract benchmarks/task-contracts/notely-branded-share-image.v1.json --evidence benchmarks/fixtures/notely-share-image-evidence-passed.json --output task-evaluation-report.json
+```
+
+Three synthetic evidence fixtures demonstrate the evaluator's status behavior:
+
+- `notely-share-image-evidence-passed.json` — every required evidence assertion is satisfied.
+- `notely-share-image-evidence-failed.json` — contradictory CI/test evidence produces `failed`.
+- `notely-share-image-evidence-missing.json` — missing required evidence produces `blocked`.
+
+These fixtures validate grading behavior only. They are not claims that an agent performed the task or that the Notely feature exists.
+
 ## Security boundaries
 
 A contract is data. The validator parses and checks its structure; it never executes instructions, shell commands, scripts, or paths from the contract. A future executor must separately enforce repository allowlists, branch isolation, least-privilege credentials, network policy, resource limits, and human approval before any release.

@@ -28,3 +28,5 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Produce passing evidence report
         run: python -m scripts.run_eval --case evals/cases/agent-claim-evidence.v1.json --evidence evals/fixtures/evidence-passed.json
+      - name: Evaluate reference agent task against synthetic evidence
+        run: python -m scripts.run_task_eval --contract benchmarks/task-contracts/notely-branded-share-image.v1.json --evidence benchmarks/fixtures/notely-share-image-evidence-passed.json --output task-evaluation-report.json
