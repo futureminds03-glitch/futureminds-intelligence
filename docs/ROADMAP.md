@@ -31,7 +31,8 @@ Each phase has an acceptance gate. Do not mark a phase complete from implementat
 - [x] Propose and document the isolated agent execution trust zones, patch gate, credential separation and rollout gates. This is a design only; no sandbox or agent execution is enabled.
 - [x] Implement Gate A offline patch manifest validation with adversarial tests for base-SHA mismatch, path traversal, allowlist escape, symlinks, protected paths, unlisted files, hash/size mismatch and path collisions.
 - [x] Prove patch application in a fresh detached Git worktree at the approved base SHA; reject dirty/mismatched source checkouts, existing output paths and symlinked target ancestors; remove the worktree on failure.
-- [ ] Verify the disposable worktree lifecycle and filesystem isolation on a dedicated ephemeral VM before any agent process is allowed.
+- [x] Run a harmless no-credential/no-network container smoke test on an ephemeral GitHub-hosted runner; verify read-only root/input, zero effective capabilities, non-root UID, CPU/memory/process limits and bounded tmpfs output.
+- [ ] Evaluate a stronger per-task VM/microVM boundary and prove host/guest separation, cleanup and credential unreachability before any model-generated code is executed.
 
 - Integrate selected repositories through least-privilege GitHub access.
 - Run deterministic evaluations on pull requests.
