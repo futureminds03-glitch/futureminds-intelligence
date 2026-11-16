@@ -38,8 +38,8 @@ def validate_case(path: Path) -> list[str]:
 
     if data.get("schema_version") != "1.0":
         errors.append(f"{path}: unsupported schema_version (expected '1.0')")
-    if data.get("case_version", 0) < 1:
-        errors.append(f"{path}: case_version must be >= 1")
+    if type(data.get("case_version")) is not int or data["case_version"] < 1:
+        errors.append(f"{path}: case_version must be an integer >= 1")
     if not isinstance(data.get("domain"), str) or data.get("domain") not in ALLOWED_DOMAINS:
         errors.append(f"{path}: domain must be one of {sorted(ALLOWED_DOMAINS)}")
 
@@ -52,6 +52,13 @@ def validate_case(path: Path) -> list[str]:
             errors.append(f"{path}: required_evidence must contain non-empty strings")
         elif len(required_evidence) != len(set(required_evidence)):
             errors.append(f"{path}: required_evidence entries must be unique")
+
+    valid_evidence_keys = (
+        set(required_evidence)
+        if isinstance(required_evidence, list)
+        and all(isinstance(item, str) and item.strip() for item in required_evidence)
+        else set()
+    )
 
     assertions = data.get("assertions", [])
     if not isinstance(assertions, list) or not assertions:
@@ -71,6 +78,11 @@ def validate_case(path: Path) -> list[str]:
                 if assertion_id in seen:
                     errors.append(f"{prefix}.id '{assertion_id}' is duplicated")
                 seen.add(assertion_id)
+            evidence_key = assertion.get("evidence_key")
+            if isinstance(evidence_key, str) and evidence_key not in valid_evidence_keys:
+                errors.append(
+                    f"{prefix}.evidence_key must be declared in required_evidence"
+                )
             operator = assertion.get("operator")
             if not isinstance(operator, str) or operator not in ALLOWED_OPERATORS:
                 errors.append(f"{prefix}.operator must be one of {sorted(ALLOWED_OPERATORS)}")
