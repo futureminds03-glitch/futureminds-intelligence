@@ -6,6 +6,9 @@ on:
     types: [completed]
 
 permissions:
+  contents: read
+  pull-requests: read
+  checks: read
   statuses: write
 
 jobs:
@@ -104,3 +107,144 @@ jobs:
         if: always()
         shell: bash
         run: rm -rf "$RUNNER_TEMP/fm-sandbox-input"
+
+  evaluate-agent-task:
+    if: github.event.workflow_run.conclusion == 'success'
+    name: Evaluate agent-task PR using authenticated evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check out trusted default-branch evaluator
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Resolve same-repository agent-task PR by exact SHA
+        id: resolve
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
+        run: |
+          set -euo pipefail
+          echo "pr_number=" >> "$GITHUB_OUTPUT"
+          if [ "$HEAD_REPOSITORY" != "$GITHUB_REPOSITORY" ]; then
+            echo "Not a same-repository PR; skipping task evaluation."
+            exit 0
+          fi
+          branch="$HEAD_BRANCH"
+          case "$branch" in
+            refs/heads/*) branch="${branch#refs/heads/}" ;;
+          esac
+          case "$branch" in
+            agent-task/*) ;;
+            *) echo "Not an agent-task branch; skipping task evaluation."; exit 0 ;;
+          esac
+          response="$(curl --fail-with-body --silent --show-error \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls?state=all&head=$GITHUB_REPOSITORY:$branch&per_page=10")"
+          pr_number="$(printf '%s' "$response" | jq -r --arg sha "$SOURCE_SHA" --arg repo "$GITHUB_REPOSITORY" --arg branch "$branch" '[.[] | select(.head.sha == $sha and .head.repo.full_name == $repo and .head.ref == $branch) | .number][0] // empty')"
+          if [ -z "$pr_number" ]; then
+            echo "No PR found whose repository, branch and head SHA match the completed CI event."
+            exit 0
+          fi
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+
+      - name: Collect read-only PR evidence
+        if: steps.resolve.outputs.pr_number != ''
+        id: collect
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+          mkdir -p task-evidence
+          mapfile -t required_checks < <(
+            python -c 'import json; c=json.load(open("benchmarks/task-contracts/github-pr-evidence-demo.v1.json", encoding="utf-8")); [print(name) for name in c.get("required_ci_check_names", [])]'
+          )
+          check_args=()
+          for check_name in "${required_checks[@]}"; do
+            check_args+=(--required-check-name "$check_name")
+          done
+          python -m scripts.collect_pr_task_evidence \
+            --repository "$GITHUB_REPOSITORY" \
+            --pull-request "$PR_NUMBER" \
+            --output task-evidence/pr-task-evidence.json \
+            "${check_args[@]}"
+
+      - name: Evaluate evidence against task contract
+        if: steps.collect.outcome == 'success'
+        id: evaluate
+        shell: bash
+        run: |
+          set +e
+          python -m scripts.run_task_eval \
+            --contract benchmarks/task-contracts/github-pr-evidence-demo.v1.json \
+            --evidence task-evidence/pr-task-evidence.json \
+            --output task-evidence/task-evaluation-report.json
+          result=$?
+          echo "exit_code=$result" >> "$GITHUB_OUTPUT"
+          exit "$result"
+
+      - name: Upload PR evidence and evaluation report
+        if: always() && hashFiles('task-evidence/*.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-task-evidence-${{ github.event.workflow_run.id }}
+          path: task-evidence/*.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish final task evaluation status
+        if: always() && steps.resolve.outputs.pr_number != ''
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          STATUS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          report="blocked"
+          if [ -f task-evidence/task-evaluation-report.json ]; then
+            report="$(python -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["status"])' task-evidence/task-evaluation-report.json)"
+          fi
+          case "$report" in
+            passed) state="success"; description="Agent task evidence passed" ;;
+            failed) state="failure"; description="Agent task evidence failed" ;;
+            *) state="error"; description="Agent task evidence is blocked or incomplete" ;;
+          esac
+          payload="$(jq -n --arg state "$state" --arg description "$description" --arg context "FutureMinds Intelligence / Agent task evidence" --arg target_url "$STATUS_URL" '{state:$state,description:$description,context:$context,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$SOURCE_SHA" \
+            -d "$payload"
+
+      - name: Add task evaluation summary
+        if: always() && hashFiles('task-evidence/task-evaluation-report.json') != ''
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          report = json.loads(Path("task-evidence/task-evaluation-report.json").read_text(encoding="utf-8"))
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write("## FutureMinds Intelligence — agent task evidence\n\n")
+              summary.write(f"**Result: {report['status'].upper()}**\n\n")
+              summary.write(f"Required assertions passed: {report['summary']['required_passed']} / {report['summary']['assertions_total']}\n\n")
+              summary.write("Agent-authored PR text is an unverified claim; source revision, changed files and checks were retrieved from GitHub.\n")
+          PY

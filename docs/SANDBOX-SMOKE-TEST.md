@@ -35,3 +35,7 @@ The workflow uses `workflow_run` and is defined on the default branch. It delibe
 ## Evidence
 
 The smoke job's GitHub Actions logs must contain `SANDBOX_PROOF=passed` and the output SHA-256. The trusted post-run step publishes a `FutureMinds Intelligence / Disposable sandbox` commit status. A completed job is evidence only for the controls explicitly tested above. It is not evidence of a fully secure agent execution environment.
+
+## Separate task-evidence job
+
+The same trusted workflow also has a separate `evaluate-agent-task` job on its own ephemeral runner. That job checks out only the default branch, retrieves PR metadata/checks through GitHub's read-only API, grades the PR against the versioned task contract, and publishes a separate evidence status/artifact. It never shares its token with the sandbox container. The sandbox job and evidence job are separate jobs; credentials used by the evidence collector do not enter the container's environment or mounts.

@@ -4,7 +4,7 @@
 
 ## Trigger
 
-The task-evaluation job is integrated into the existing `Capture independent GitHub evidence` workflow. It runs after `Evaluation foundation checks`, resolves a same-repository PR by exact completed SHA, repository identity and `agent-task/` branch, and skips when no matching task PR exists. It checks out only the trusted default branch and never checks out or executes the triggering PR head.
+The task-evaluation job is integrated into the verified `Disposable sandbox smoke test` workflow. It runs after `Evaluation foundation checks`, resolves a same-repository PR by exact completed SHA, repository identity and `agent-task/` branch, and skips when no matching task PR exists. It checks out only the trusted default branch and never checks out or executes the triggering PR head.
 
 ## Evidence collection
 
