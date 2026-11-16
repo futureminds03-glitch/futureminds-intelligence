@@ -8,7 +8,7 @@ The workflow runs after a successful `Evaluation foundation checks` workflow for
 
 ## Evidence collection
 
-The workflow calls `scripts/collect_pr_task_evidence.py` with a read-only GitHub token. The adapter retrieves:
+The trusted workflow resolves the pull request by querying GitHub for the PR associated with the exact completed commit SHA, then calls `scripts/collect_pr_task_evidence.py` with a read-only GitHub token. It does not rely on a potentially empty PR list in the workflow-run event. The adapter retrieves:
 - PR head commit SHA.
 - Complete changed-file inventory.
 - Check-run metadata and completed outcomes.
