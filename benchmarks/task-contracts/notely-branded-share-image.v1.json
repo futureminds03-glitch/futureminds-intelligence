@@ -53,7 +53,7 @@
     },
     {
       "id": "ci-green",
-      "requirement": "Required CI checks completed successfully.",
+      "requirement": "All observed required CI checks completed successfully.",
       "evidence_key": "ci_status",
       "operator": "equals",
       "expected": "success",
@@ -61,17 +61,19 @@
     },
     {
       "id": "unit-tests",
-      "requirement": "Unit test execution result is recorded.",
+      "requirement": "A completed unit-test check reports success.",
       "evidence_key": "unit_test_result",
-      "operator": "is_non_empty_string",
-      "required": true
+      "operator": "equals",
+      "required": true,
+      "expected": "success"
     },
     {
       "id": "share-export-tests",
-      "requirement": "Share-image-specific test execution result is recorded.",
+      "requirement": "A completed share/image/export-specific check reports success.",
       "evidence_key": "share_image_test_result",
-      "operator": "is_non_empty_string",
-      "required": true
+      "operator": "equals",
+      "required": true,
+      "expected": "success"
     },
     {
       "id": "completion-summary",
