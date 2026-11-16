@@ -13,6 +13,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from scripts.validate_agent_patch import validate_patch_manifest
+from scripts.validate_task_contracts import validate_contract
 
 
 class PatchApplyError(Exception):
@@ -178,6 +179,9 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
+        contract_errors = validate_contract(args.contract)
+        if contract_errors:
+            raise PatchApplyError("; ".join(contract_errors))
         contract = json.loads(args.contract.read_text(encoding="utf-8"))
         manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
         result = apply_validated_patch(
