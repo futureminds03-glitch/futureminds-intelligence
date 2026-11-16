@@ -66,13 +66,16 @@ def main() -> int:
         "version": contract["task_version"],
         "title": contract["title"],
     }
-    report["evidence_provenance"] = {
-        "source": "user-supplied-json",
-        "integrity_note": (
-            "This report grades supplied evidence only. It does not authenticate GitHub, "
-            "CI, browser, agent, or deployment evidence."
-        ),
-    }
+    report["evidence_provenance"] = evidence.get(
+        "evidence_provenance",
+        {
+            "source": "user-supplied-json",
+            "integrity_note": (
+                "This report grades supplied evidence only. It does not authenticate GitHub, "
+                "CI, browser, agent, or deployment evidence."
+            ),
+        },
+    )
     report["limitations"].append(
         "Task contract evaluation does not execute or sandbox an AI coding agent."
     )
