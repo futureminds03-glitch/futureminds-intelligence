@@ -29,6 +29,20 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Record non-sensitive workflow event identity
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          ASSOCIATED_PRS: ${{ toJson(github.event.workflow_run.pull_requests) }}
+        run: |
+          {
+            echo "## Task evidence workflow event"
+            echo "Head branch: $HEAD_BRANCH"
+            echo "Head SHA: $SOURCE_SHA"
+            echo "Associated PR payload: $ASSOCIATED_PRS"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Resolve pull request from completed commit
         id: resolve
         env:
