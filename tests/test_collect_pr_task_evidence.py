@@ -48,7 +48,7 @@ class CollectPrTaskEvidenceTests(unittest.TestCase):
     def test_missing_feature_specific_check_is_not_a_pass(self):
         checks = {
             "total_count": 2,
-            "check_runs": self.checks["check_runs"][:2],
+            "check_runs": [self.checks["check_runs"][0], self.checks["check_runs"][2]],
         }
         evidence = self.collect(checks=checks)
         self.assertIsNone(evidence["share_image_test_result"])
