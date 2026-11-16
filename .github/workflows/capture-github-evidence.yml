@@ -30,10 +30,33 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
         run: python -m scripts.collect_github_evidence
-      - name: Upload evidence report
+      - name: Grade collected GitHub evidence
+        id: grade
+        shell: bash
+        run: |
+          set +e
+          python -m scripts.run_eval --case evals/cases/agent-claim-evidence.v1.json --evidence evidence/github-evidence.json --output evidence/evaluation-report.json
+          result=$?
+          if [ "$result" -gt 1 ]; then
+            exit "$result"
+          fi
+          echo "evaluation_exit_code=$result" >> "$GITHUB_OUTPUT"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          report = json.loads(Path("evidence/evaluation-report.json").read_text(encoding="utf-8"))
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write("## FutureMinds Intelligence evaluation\\n\\n")
+              summary.write(f"**Result: {report['status'].upper()}**\\n\\n")
+              summary.write(f"Required assertions passed: {report['summary']['required_passed']}\\n\\n")
+              summary.write("Evidence artifact contains the complete run report and source evidence.\\n")
+          PY
+      - name: Upload evidence and evaluation report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: github-evidence-${{ github.event.workflow_run.id }}
-          path: evidence/github-evidence.json
+          path: evidence/*.json
           if-no-files-found: error
           retention-days: 14
