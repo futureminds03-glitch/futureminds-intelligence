@@ -6,8 +6,8 @@ class SandboxSmokeDocumentationTests(unittest.TestCase):
     def test_documentation_preserves_isolation_limits(self):
         content = Path("docs/SANDBOX-SMOKE-TEST.md").read_text(encoding="utf-8")
         self.assertIn("Containers share the host kernel", content)
-        self.assertIn("does not authorize", content.lower())
-        self.assertIn("no token passed to the container", content.lower())
+        self.assertIn("not authorization to run coding agents", content.lower())
+        self.assertIn("never passed to the container", content.lower())
 
     def test_documentation_explains_trusted_status_boundary(self):
         content = Path("docs/SANDBOX-SMOKE-TEST.md").read_text(encoding="utf-8")
