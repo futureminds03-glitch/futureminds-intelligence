@@ -15,7 +15,7 @@ class AgentSandboxSmokeWorkflowTests(unittest.TestCase):
         self.assertIn('workflows: ["Evaluation foundation checks"]', self.content)
         self.assertIn("types: [completed]", self.content)
 
-    def test_has_no_github_permissions_or_checkout(self):
+    def test_uses_only_status_permission_and_keeps_token_out_of_sandbox(self):
         self.assertIn("permissions:\n  statuses: write", self.content)
         self.assertNotIn("actions/checkout", self.content)
         self.assertNotIn("secrets.", self.content)
