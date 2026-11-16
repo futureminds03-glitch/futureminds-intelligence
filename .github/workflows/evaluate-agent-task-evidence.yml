@@ -61,10 +61,18 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p evidence
+          mapfile -t required_checks < <(
+            python -c 'import json; c=json.load(open("benchmarks/task-contracts/github-pr-evidence-demo.v1.json", encoding="utf-8")); [print(name) for name in c.get("required_ci_check_names", [])]'
+          )
+          check_args=()
+          for check_name in "${required_checks[@]}"; do
+            check_args+=(--required-check-name "$check_name")
+          done
           python -m scripts.collect_pr_task_evidence \
             --repository "$GITHUB_REPOSITORY" \
             --pull-request "$PR_NUMBER" \
-            --output evidence/pr-task-evidence.json
+            --output evidence/pr-task-evidence.json \
+            "${check_args[@]}"
 
       - name: Evaluate evidence against the task contract
         id: evaluate
