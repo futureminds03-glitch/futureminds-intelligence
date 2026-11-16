@@ -54,14 +54,12 @@ jobs:
                 echo "ERROR: source snapshot was writable"
                 exit 11
               fi
-              root_opts="$(awk '\''$2 == "/" {print $4}'\'' /proc/mounts)"
-              case ",$root_opts," in
-                *,ro,*) ;;
-                *) echo "ERROR: root filesystem is not read-only"; exit 12 ;;
-              esac
-              cap_eff="$(awk '\''/^CapEff:/ {print $2}'\'' /proc/self/status)"
-              test "$cap_eff" = "0000000000000000"
-              if env | grep -Eiq "(TOKEN|SECRET|PASSWORD|PRIVATE_KEY|SUPABASE|VERCEL)"; then
+              if ! grep -E "^[^ ]+ / [^ ]+ ro[, ]" /proc/mounts >/dev/null; then
+                echo "ERROR: root filesystem is not read-only"
+                exit 12
+              fi
+              grep -Eq "CapEff:[[:space:]]*0000000000000000" /proc/self/status
+              if env | cut -d= -f1 | grep -Eiq "(TOKEN|SECRET|PASSWORD|PRIVATE_KEY|SUPABASE|VERCEL)"; then
                 echo "ERROR: sensitive environment variable name detected"
                 exit 13
               fi
