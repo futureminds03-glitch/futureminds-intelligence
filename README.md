@@ -40,6 +40,7 @@ A modular monolith first; no microservices until measured needs justify them.
 - `docs/ROADMAP.md` — staged delivery plan and acceptance gates.
 - `docs/SECURITY.md` — security baseline and threat model.
 - `docs/AGENT-EXECUTION-BOUNDARY.md` — proposed isolation, patch-gate and credential-boundary design for future coding-agent execution.
+- `docs/AGENT-PATCH-GATE.md` — offline patch manifest format, validation command and limitations.
 - `docs/ADR/` — architecture decision records.
 - `evals/` — versioned evaluation cases and fixtures.
 - `packages/` — application and engine code (introduced incrementally).
@@ -72,7 +73,7 @@ Validate task contracts with `python scripts/validate_task_contracts.py` and eva
 python -m scripts.run_task_eval --contract benchmarks/task-contracts/notely-branded-share-image.v1.json --evidence benchmarks/fixtures/notely-share-image-evidence-passed.json
 ```
 
-The task-evaluation fixtures demonstrate `passed`, `failed`, and `blocked` outcomes. They are synthetic examples, not evidence that the Notely feature was implemented. Avoid introducing a large framework or vendor dependency before it earns its place.
+The task-evaluation fixtures demonstrate `passed`, `failed`, and `blocked` outcomes. They are synthetic examples, not evidence that the Notely feature was implemented. The offline patch gate is invoked with `python -m scripts.validate_agent_patch --contract <contract.json> --manifest <manifest.json> --patch-root <patch-output> --expected-base-sha <immutable-sha>`. It validates output structure only; it does not apply patches or run an agent. Avoid introducing a large framework or vendor dependency before it earns its place.
 
 ## Status vocabulary
 
