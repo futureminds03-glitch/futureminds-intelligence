@@ -104,7 +104,8 @@ jobs:
           import json
           from pathlib import Path
           report = json.loads(Path("evidence/task-evaluation-report.json").read_text(encoding="utf-8"))
-          with open("${{ github.step_summary }}", "a", encoding="utf-8") as summary:
+          import os
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
               summary.write("## FutureMinds Intelligence — agent task evidence\n\n")
               summary.write(f"**Result: {report['status'].upper()}**\n\n")
               summary.write(f"Required assertions passed: {report['summary']['required_passed']} / {report['summary']['assertions_total']}\n\n")
