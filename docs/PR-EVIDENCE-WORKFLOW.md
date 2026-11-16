@@ -36,3 +36,7 @@ A `passed` result means the evidence assertions in this reference contract passe
 Use `agent-task/<short-task-name>` for PRs that should enter this reference evidence pipeline. The workflow currently uses one generic benchmark contract for demonstration; task-specific contract selection and authenticated tool-trace evidence are future work.
 
 The contract declares exact `required_ci_check_names`. Only those named checks contribute to the task's required CI/unit-test grade. This prevents the evidence collector's own in-progress check (and unrelated concurrent workflows) from contaminating its result. A missing or ambiguous required check remains blocked; the workflow does not silently broaden the allowlist.
+
+## Evidence artifact provenance
+
+The JSON report preserves the evidence source and observation time. GitHub API fields are distinguished from the PR-body completion claim, which remains unverified. Reviewers should inspect both the source evidence artifact and the evaluator report; a green status alone is only a summary of the contract assertions.
