@@ -2,7 +2,7 @@
   "source_revision": "0123456789abcdef0123456789abcdef01234567",
   "changed_files": "src/components/NoteShare.tsx; tests/NoteShare.test.tsx",
   "ci_status": "success",
-  "unit_test_result": "success: 42 tests passed",
-  "share_image_test_result": "success: export branding and native-share fallback verified",
+  "unit_test_result": "success",
+  "share_image_test_result": "success",
   "agent_completion_summary": "Implemented branded note image export with native share and download fallback."
 }
