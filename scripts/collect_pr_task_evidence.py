@@ -16,7 +16,7 @@ from typing import Any
 API_ROOT = "https://api.github.com"
 API_VERSION = "2022-11-28"
 MAX_ITEMS = 100
-TEST_NAME = re.compile(r"test|pytest|unit", re.IGNORECASE)
+TEST_NAME = re.compile(r"unit|pytest|unittest", re.IGNORECASE)
 FEATURE_TEST_NAME = re.compile(r"share|image|export", re.IGNORECASE)
 
 
