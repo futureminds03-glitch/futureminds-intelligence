@@ -71,7 +71,7 @@ class ValidateAgentPatchTests(unittest.TestCase):
 
     def test_rejects_workflow_files(self):
         manifest = self.manifest_for(".github/workflows/build.yml")
-        with self.assertRaisesRegex(PatchRejected, "allowlist"):
+        with self.assertRaisesRegex(PatchRejected, "forbidden"):
             self.validate(manifest)
 
     def test_rejects_symlink_output(self):
