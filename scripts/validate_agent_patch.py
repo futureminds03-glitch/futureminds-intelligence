@@ -127,6 +127,22 @@ def validate_patch_manifest(
     if manifest.get("base_sha") != expected_base_sha:
         raise PatchRejected("patch base SHA does not match the approved immutable base revision")
 
+    if not isinstance(allowed_paths, list) or not allowed_paths:
+        raise PatchRejected("task allowlist must be a non-empty list")
+    normalized_allowlist: list[str] = []
+    for allowed in allowed_paths:
+        if not isinstance(allowed, str) or not allowed:
+            raise PatchRejected("task allowlist entries must be non-empty relative paths")
+        is_directory = allowed.endswith("/")
+        normalized = _safe_relative_path(allowed[:-1] if is_directory else allowed)
+        normalized_allowlist.append(normalized + ("/" if is_directory else ""))
+    if len(normalized_allowlist) != len(set(normalized_allowlist)):
+        raise PatchRejected("task allowlist contains duplicate paths")
+    allowed_paths = normalized_allowlist
+
+    if min(max_files, max_file_bytes, max_total_bytes) < 1:
+        raise PatchRejected("patch size limits must all be positive integers")
+
     entries = manifest.get("files")
     if not isinstance(entries, list) or not entries:
         raise PatchRejected("manifest files must be a non-empty list")
