@@ -63,7 +63,15 @@ The repository is being bootstrapped in stages. The initial deterministic vertic
 python -m scripts.run_eval --case evals/cases/agent-claim-evidence.v1.json --evidence evals/fixtures/evidence-passed.json
 ```
 
-The runner accepts JSON evidence, grades only the declared deterministic operators, and emits an inspectable JSON report. It does not authenticate evidence origin or execute agents. Avoid introducing a large framework or vendor dependency before it earns its place.
+The runner accepts JSON evidence, grades only the declared deterministic operators, and emits an inspectable JSON report. It does not authenticate evidence origin or execute agents.
+
+Validate task contracts with `python scripts/validate_task_contracts.py` and evaluate a bounded coding task with:
+
+```bash
+python -m scripts.run_task_eval --contract benchmarks/task-contracts/notely-branded-share-image.v1.json --evidence benchmarks/fixtures/notely-share-image-evidence-passed.json
+```
+
+The task-evaluation fixtures demonstrate `passed`, `failed`, and `blocked` outcomes. They are synthetic examples, not evidence that the Notely feature was implemented. Avoid introducing a large framework or vendor dependency before it earns its place.
 
 ## Status vocabulary
 
