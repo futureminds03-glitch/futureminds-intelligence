@@ -9,7 +9,7 @@ Each phase has an acceptance gate. Do not mark a phase complete from implementat
 - [x] Add versioned evaluation case format and validator.
 - [x] Add deterministic grader and run report.
 - [x] Add unit tests and CI validation.
-- [ ] Verify CI on a pull request (this branch).
+- [x] Verify CI on a pull request.
 
 **Exit gate:** a reproducible local and CI run can pass and fail deterministically, with evidence attached.
 

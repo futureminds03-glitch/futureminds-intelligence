@@ -63,6 +63,21 @@ class ValidateEvaluationCaseTests(unittest.TestCase):
         data["assertions"][0]["operator"] = ["equals"]
         self.assertTrue(validate_case(self.write_case(data)))
 
+    def test_rejects_non_integer_case_version_without_crashing(self):
+        data = json.loads(json.dumps(VALID_CASE))
+        data["case_version"] = "one"
+        self.assertTrue(validate_case(self.write_case(data)))
+
+    def test_rejects_boolean_case_version(self):
+        data = json.loads(json.dumps(VALID_CASE))
+        data["case_version"] = True
+        self.assertTrue(validate_case(self.write_case(data)))
+
+    def test_rejects_assertion_for_undeclared_evidence_key(self):
+        data = json.loads(json.dumps(VALID_CASE))
+        data["assertions"][0]["evidence_key"] = "undeclared"
+        self.assertTrue(any("required_evidence" in error for error in validate_case(self.write_case(data))))
+
     def test_rejects_invalid_json(self):
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", suffix=".json", delete=False) as temporary:
             temporary.write("{not json")
