@@ -69,5 +69,8 @@
       "operator": "is_non_empty_string",
       "required": true
     }
+  ],
+  "required_ci_check_names": [
+    "Validate cases and unit tests"
   ]
 }

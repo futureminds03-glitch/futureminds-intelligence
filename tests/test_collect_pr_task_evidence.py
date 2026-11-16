@@ -26,14 +26,14 @@ class CollectPrTaskEvidenceTests(unittest.TestCase):
             ],
         }
 
-    def collect(self, checks=None, files=None, pull=None):
+    def collect(self, checks=None, files=None, pull=None, required_check_names=None):
         responses = [
             self.pull if pull is None else pull,
             self.files if files is None else files,
             self.checks if checks is None else checks,
         ]
         with patch("scripts.collect_pr_task_evidence.github_get", side_effect=responses):
-            return collect_pr_evidence("acme/app", 12, "read-only-test-token")
+            return collect_pr_evidence("acme/app", 12, "read-only-test-token", required_check_names)
 
     def test_collects_revision_files_and_successful_checks(self):
         evidence = self.collect()
@@ -70,6 +70,37 @@ class CollectPrTaskEvidenceTests(unittest.TestCase):
         evidence = self.collect(checks=checks)
         self.assertEqual(evidence["ci_status"], "failure")
         self.assertEqual(evidence["unit_test_result"], "failure")
+
+
+    def test_required_check_allowlist_ignores_in_progress_evaluator_checks(self):
+        checks = {
+            "total_count": 3,
+            "check_runs": [
+                {"name": "Unit tests", "status": "completed", "conclusion": "success"},
+                {"name": "Collect and grade trusted PR evidence", "status": "in_progress", "conclusion": None},
+                {"name": "Verify disposable no-credential sandbox", "status": "in_progress", "conclusion": None},
+            ],
+        }
+        evidence = self.collect(checks=checks, required_check_names=["Unit tests"])
+        self.assertEqual(evidence["ci_status"], "success")
+        self.assertEqual(evidence["unit_test_result"], "success")
+        self.assertEqual(evidence["required_ci_check_names"], ["Unit tests"])
+
+    def test_missing_required_check_is_not_a_pass(self):
+        evidence = self.collect(required_check_names=["Required CI"])
+        self.assertIsNone(evidence["ci_status"])
+        self.assertIsNone(evidence["unit_test_result"])
+
+    def test_duplicate_required_check_name_is_rejected_as_ambiguous(self):
+        checks = {
+            "total_count": 2,
+            "check_runs": [
+                {"name": "Unit tests", "status": "completed", "conclusion": "success"},
+                {"name": "Unit tests", "status": "completed", "conclusion": "success"},
+            ],
+        }
+        with self.assertRaisesRegex(EvidenceCollectionError, "ambiguous"):
+            self.collect(checks=checks, required_check_names=["Unit tests"])
 
     def test_rejects_truncated_file_inventory(self):
         files = [{"filename": f"file-{i}.py"} for i in range(100)]

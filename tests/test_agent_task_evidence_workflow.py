@@ -34,6 +34,12 @@ class AgentTaskEvidenceWorkflowTests(unittest.TestCase):
         self.assertIn("select(.head.sha == $sha)", self.content)
         self.assertNotIn("pull_requests[0]", self.content)
 
+
+    def test_passes_contract_required_checks_to_evidence_adapter(self):
+        self.assertIn("required_ci_check_names", self.content)
+        self.assertIn("--required-check-name", self.content)
+        self.assertIn("check_args", self.content)
+
     def test_agent_claim_is_not_executed(self):
         self.assertIn("collect_pr_task_evidence", self.content)
         self.assertIn("run_task_eval", self.content)

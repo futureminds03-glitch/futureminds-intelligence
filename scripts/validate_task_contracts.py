@@ -67,6 +67,15 @@ def validate_contract(path: Path) -> list[str]:
             if isinstance(item, str) and (item.startswith("/") or ".." in Path(item).parts):
                 errors.append(f"{path}: allowed_paths must be relative paths without absolute prefixes or '..' segments")
 
+    required_ci_names = data.get("required_ci_check_names")
+    if required_ci_names is not None:
+        if not isinstance(required_ci_names, list) or not required_ci_names or any(
+            not isinstance(item, str) or not item.strip() for item in required_ci_names
+        ):
+            errors.append(f"{path}: required_ci_check_names must contain non-empty check names")
+        elif len(required_ci_names) != len(set(required_ci_names)):
+            errors.append(f"{path}: required_ci_check_names entries must be unique")
+
     forbidden = data.get("forbidden_actions")
     if isinstance(forbidden, list):
         if not forbidden or any(not isinstance(item, str) or not item.strip() for item in forbidden):

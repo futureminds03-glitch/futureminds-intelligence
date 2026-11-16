@@ -64,7 +64,12 @@ def _extract_agent_summary(body: str | None) -> str | None:
     return summary or None
 
 
-def collect_pr_evidence(repository: str, pull_number: int, token: str) -> dict[str, Any]:
+def collect_pr_evidence(
+    repository: str,
+    pull_number: int,
+    token: str,
+    required_check_names: list[str] | None = None,
+) -> dict[str, Any]:
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
         raise EvidenceCollectionError("Repository must use owner/repository format")
     if type(pull_number) is not int or pull_number < 1:
@@ -122,8 +127,26 @@ def collect_pr_evidence(repository: str, pull_number: int, token: str) -> dict[s
     if len(summaries) != len(checks):
         raise EvidenceCollectionError("Check-run inventory contained malformed entries")
 
-    ci_status = _check_group_status(checks)
-    test_checks = [item for item in checks if TEST_NAME.search(str(item.get("name", "")))]
+    if required_check_names is not None:
+        if not required_check_names or any(not isinstance(name, str) or not name.strip() for name in required_check_names):
+            raise EvidenceCollectionError("Required check names must be a non-empty list of non-empty strings")
+        if len(required_check_names) != len(set(required_check_names)):
+            raise EvidenceCollectionError("Required check names must be unique")
+        selected_checks: list[dict[str, Any]] = []
+        for name in required_check_names:
+            matches = [item for item in checks if item.get("name") == name]
+            if len(matches) > 1:
+                raise EvidenceCollectionError(f"Required check name is ambiguous: {name}")
+            if len(matches) == 0:
+                selected_checks = []
+                break
+            selected_checks.append(matches[0])
+        ci_checks = selected_checks
+    else:
+        ci_checks = checks
+
+    ci_status = _check_group_status(ci_checks)
+    test_checks = [item for item in ci_checks if TEST_NAME.search(str(item.get("name", "")))]
     feature_checks = [item for item in checks if FEATURE_TEST_NAME.search(str(item.get("name", "")))]
     unit_status = _check_group_status(test_checks)
     feature_status = _check_group_status(feature_checks)
@@ -140,6 +163,7 @@ def collect_pr_evidence(repository: str, pull_number: int, token: str) -> dict[s
         "unit_test_result": unit_status,
         "share_image_test_result": feature_status,
         "check_runs": summaries,
+        "required_ci_check_names": required_check_names,
         "evidence_provenance": {
             "source": "github-rest-api-read-only",
             "observed_at": datetime.now(timezone.utc).isoformat(),
@@ -150,6 +174,7 @@ def collect_pr_evidence(repository: str, pull_number: int, token: str) -> dict[s
                 "source_revision",
                 "changed_files",
                 "check_runs",
+                "required_ci_check_names",
                 "ci_status",
                 "unit_test_result",
                 "share_image_test_result",
@@ -174,10 +199,18 @@ def main() -> int:
     parser.add_argument("--repository", required=True, help="GitHub owner/repository")
     parser.add_argument("--pull-request", required=True, type=int, help="Pull request number")
     parser.add_argument("--output", type=Path, required=True, help="Output evidence JSON path")
+    parser.add_argument(
+        "--required-check-name",
+        action="append",
+        dest="required_check_names",
+        help="Exact required GitHub check-run name; repeat for each required check",
+    )
     args = parser.parse_args()
     token = os.environ.get("GITHUB_TOKEN", "")
     try:
-        evidence = collect_pr_evidence(args.repository, args.pull_request, token)
+        evidence = collect_pr_evidence(
+            args.repository, args.pull_request, token, args.required_check_names
+        )
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     except (OSError, EvidenceCollectionError) as exc:
