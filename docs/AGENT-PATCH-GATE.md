@@ -62,3 +62,22 @@ Protected paths include workflows/actions, dependency manifests and lockfiles, a
 - A passing report means only that the patch output satisfies these structural and policy checks.
 - The trusted controller must still apply the patch atomically to a clean checkout of the expected base revision and independently run CI.
 - This is not a sandbox. It does not protect the host from a process that generated the files; agent execution remains disabled until a disposable isolation environment is separately implemented and verified.
+
+## Apply to a disposable detached worktree
+
+After offline validation, the trusted controller can apply the manifest to a **new detached Git worktree** based on the approved commit:
+
+```bash
+python -m scripts.apply_validated_patch \
+  --repository /path/to/clean/source-checkout \
+  --contract benchmarks/task-contracts/notely-branded-share-image.v1.json \
+  --manifest /path/to/patch-manifest.json \
+  --patch-root /path/to/patch-output \
+  --expected-base-sha <approved-commit-sha> \
+  --output-worktree /path/to/new-detached-worktree \
+  --report patch-application-report.json
+```
+
+The source checkout must be a clean Git working tree at the exact expected SHA. The output worktree must be a new path outside the source checkout. The controller checks add/modify/delete semantics, rejects symlinked target ancestors, creates the detached worktree, applies the complete manifest, and compares the resulting Git changed-file inventory with the manifest. If any step fails, the temporary worktree is removed. The source checkout is never modified, and no commit, push, PR, test run or deployment is performed.
+
+A successful result means the manifest was applied to a disposable worktree with the expected file inventory. It does not prove that the code builds, tests pass, or an agent sandbox is secure.
