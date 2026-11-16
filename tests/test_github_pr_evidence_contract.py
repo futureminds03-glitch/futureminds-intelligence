@@ -22,6 +22,12 @@ class GithubPrEvidenceContractTests(unittest.TestCase):
         referenced = {item["evidence_key"] for item in self.contract["acceptance_criteria"]}
         self.assertEqual(referenced, declared)
 
+
+    def test_required_check_name_is_not_implicitly_broadened(self):
+        names = self.contract["required_ci_check_names"]
+        self.assertEqual(len(names), len(set(names)))
+        self.assertEqual(names, ["Validate cases and unit tests"])
+
     def test_contract_requires_successful_ci_and_unit_tests(self):
         criteria = {item["id"]: item for item in self.contract["acceptance_criteria"]}
         self.assertEqual(criteria["ci"]["expected"], "success")
