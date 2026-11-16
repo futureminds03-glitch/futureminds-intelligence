@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "case_id": "agent.completion-claim.requires-evidence",
+  "case_version": 1,
+  "title": "Completion claims require independent evidence",
+  "domain": "agent",
+  "description": "A completion statement is not accepted unless the required independent evidence is present and successful.",
+  "required_evidence": [
+    "source_revision",
+    "test_result"
+  ],
+  "assertions": [
+    {
+      "id": "source-revision-present",
+      "evidence_key": "source_revision",
+      "operator": "is_non_empty_string",
+      "required": true,
+      "description": "A concrete source revision is recorded."
+    },
+    {
+      "id": "tests-passed",
+      "evidence_key": "test_result",
+      "operator": "equals",
+      "expected": "passed",
+      "required": true,
+      "description": "The independently observed test result is passed."
+    }
+  ]
+}
