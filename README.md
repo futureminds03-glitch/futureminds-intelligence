@@ -60,7 +60,7 @@ A modular monolith first; no microservices until measured needs justify them.
 The repository is being bootstrapped in stages. The initial deterministic vertical slice is implemented in Python using only the standard library. Validate cases with `python scripts/validate_evals.py`, run tests with `python -m unittest discover -s tests -v`, and evaluate evidence with:
 
 ```bash
-python scripts/run_eval.py --case evals/cases/agent-claim-evidence.v1.json --evidence evals/fixtures/evidence-passed.json
+python -m scripts.run_eval --case evals/cases/agent-claim-evidence.v1.json --evidence evals/fixtures/evidence-passed.json
 ```
 
 The runner accepts JSON evidence, grades only the declared deterministic operators, and emits an inspectable JSON report. It does not authenticate evidence origin or execute agents. Avoid introducing a large framework or vendor dependency before it earns its place.
