@@ -28,6 +28,12 @@ class AgentTaskEvidenceWorkflowTests(unittest.TestCase):
         self.assertNotIn("contents: write", self.content)
         self.assertNotIn("pull-requests: write", self.content)
 
+
+    def test_resolves_pr_by_exact_completed_commit(self):
+        self.assertIn("/commits/$SOURCE_SHA/pulls?per_page=10", self.content)
+        self.assertIn("select(.head.sha == $sha)", self.content)
+        self.assertNotIn("pull_requests[0]", self.content)
+
     def test_agent_claim_is_not_executed(self):
         self.assertIn("collect_pr_task_evidence", self.content)
         self.assertIn("run_task_eval", self.content)
