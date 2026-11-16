@@ -55,6 +55,26 @@ class RunTaskEvaluationTests(unittest.TestCase):
         self.assertEqual(report["status"], "blocked")
         self.assertEqual(report["summary"]["required_missing"], 1)
 
+
+    def test_preserves_authenticated_provenance_from_adapter(self):
+        provenance = {
+            "source": "github-rest-api-read-only",
+            "agent_claim_is_independently_verified": False,
+        }
+        evidence = {
+            "source_revision": "a" * 40,
+            "changed_files": "src/share.tsx",
+            "ci_status": "success",
+            "unit_test_result": "success",
+            "share_image_test_result": "success",
+            "agent_completion_summary": "Added the export flow.",
+            "evidence_provenance": provenance,
+        }
+        report = evaluate(build_evaluation_case(CONTRACT), evidence)
+        report_provenance = evidence["evidence_provenance"]
+        self.assertEqual(report_provenance["source"], "github-rest-api-read-only")
+        self.assertFalse(report_provenance["agent_claim_is_independently_verified"])
+
     def test_contradictory_evidence_fails(self):
         report = evaluate(
             build_evaluation_case(CONTRACT),
