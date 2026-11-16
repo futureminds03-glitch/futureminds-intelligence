@@ -50,6 +50,11 @@ class AgentTaskEvidenceWorkflowTests(unittest.TestCase):
         self.assertIn("run_task_eval", self.content)
         self.assertNotIn("workflow_run.head_sha", self.content.split("Check out trusted default-branch evaluator", 1)[1].split("Set up Python", 1)[0])
 
+
+    def test_status_is_published_only_after_a_task_pr_is_resolved(self):
+        self.assertIn("if: always() && steps.resolve.outputs.pr_number != ''", self.content)
+        self.assertIn("PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}", self.content)
+
     def test_preserves_artifacts_and_status(self):
         self.assertIn("actions/upload-artifact@v4", self.content)
         self.assertIn("retention-days: 14", self.content)
