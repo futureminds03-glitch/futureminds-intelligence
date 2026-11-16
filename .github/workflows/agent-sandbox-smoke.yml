@@ -5,7 +5,8 @@ on:
     workflows: ["Evaluation foundation checks"]
     types: [completed]
 
-permissions: {}
+permissions:
+  statuses: write
 
 jobs:
   sandbox-smoke:
@@ -30,6 +31,7 @@ jobs:
           docker pull docker.io/library/busybox@sha256:66a6306db78bf2dbf3487f293aa8d6990d8e506fdffab9cc43fe422becf886e4
 
       - name: Run constrained sandbox proof
+        id: sandbox
         shell: bash
         run: |
           set -euo pipefail
@@ -71,6 +73,32 @@ jobs:
               sha256sum /output/result.txt
               echo "SANDBOX_PROOF=passed"
             '
+
+      - name: Publish sandbox proof status
+        if: always() && github.event.workflow_run.head_repository.full_name == github.repository
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          SANDBOX_OUTCOME: ${{ steps.sandbox.outcome }}
+          STATUS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          if [ "$SANDBOX_OUTCOME" = "success" ]; then
+            state="success"
+            description="Constrained no-credential sandbox smoke passed"
+          else
+            state="failure"
+            description="Constrained sandbox smoke failed; inspect workflow logs"
+          fi
+          payload="$(jq -n --arg state "$state" --arg description "$description" --arg context "FutureMinds Intelligence / Disposable sandbox" --arg target_url "$STATUS_URL" '{state:$state,description:$description,context:$context,target_url:$target_url}')"
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$SOURCE_SHA" \
+            -d "$payload"
 
       - name: Remove synthetic source snapshot
         if: always()

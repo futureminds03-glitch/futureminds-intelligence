@@ -15,11 +15,14 @@ class AgentSandboxSmokeWorkflowTests(unittest.TestCase):
         self.assertIn('workflows: ["Evaluation foundation checks"]', self.content)
         self.assertIn("types: [completed]", self.content)
 
-    def test_has_no_github_permissions_or_checkout(self):
-        self.assertIn("permissions: {}", self.content)
+    def test_uses_only_status_permission_and_keeps_token_out_of_sandbox(self):
+        self.assertIn("permissions:\n  statuses: write", self.content)
         self.assertNotIn("actions/checkout", self.content)
-        self.assertNotIn("GITHUB_TOKEN", self.content)
         self.assertNotIn("secrets.", self.content)
+        docker_section = self.content.split("      - name: Run constrained sandbox proof", 1)[1].split("      - name: Publish sandbox proof status", 1)[0]
+        self.assertNotIn("GITHUB_TOKEN", docker_section)
+        self.assertNotIn("github.token", docker_section)
+        self.assertIn("GITHUB_TOKEN: ${{ github.token }}", self.content)
 
     def test_pins_container_by_digest(self):
         self.assertIn(
