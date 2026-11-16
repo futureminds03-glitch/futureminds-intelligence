@@ -52,6 +52,17 @@ class ValidateEvaluationCaseTests(unittest.TestCase):
         data["assertions"][0]["operator"] = "equals"
         self.assertTrue(any("expected" in error for error in validate_case(self.write_case(data))))
 
+    def test_rejects_unhashable_evidence_key_without_crashing(self):
+        data = json.loads(json.dumps(VALID_CASE))
+        data["required_evidence"] = [["nested"]]
+        self.assertTrue(validate_case(self.write_case(data)))
+
+    def test_rejects_unhashable_domain_and_operator_without_crashing(self):
+        data = json.loads(json.dumps(VALID_CASE))
+        data["domain"] = ["agent"]
+        data["assertions"][0]["operator"] = ["equals"]
+        self.assertTrue(validate_case(self.write_case(data)))
+
     def test_rejects_invalid_json(self):
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", suffix=".json", delete=False) as temporary:
             temporary.write("{not json")
