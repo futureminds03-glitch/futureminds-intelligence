@@ -40,14 +40,17 @@ def validate_case(path: Path) -> list[str]:
         errors.append(f"{path}: unsupported schema_version (expected '1.0')")
     if data.get("case_version", 0) < 1:
         errors.append(f"{path}: case_version must be >= 1")
-    if data.get("domain") not in ALLOWED_DOMAINS:
+    if not isinstance(data.get("domain"), str) or data.get("domain") not in ALLOWED_DOMAINS:
         errors.append(f"{path}: domain must be one of {sorted(ALLOWED_DOMAINS)}")
 
     required_evidence = data.get("required_evidence", [])
     if isinstance(required_evidence, list):
-        if not all(isinstance(item, str) and item.strip() for item in required_evidence):
+        valid_evidence_keys = all(
+            isinstance(item, str) and item.strip() for item in required_evidence
+        )
+        if not valid_evidence_keys:
             errors.append(f"{path}: required_evidence must contain non-empty strings")
-        if len(required_evidence) != len(set(required_evidence)):
+        elif len(required_evidence) != len(set(required_evidence)):
             errors.append(f"{path}: required_evidence entries must be unique")
 
     assertions = data.get("assertions", [])
@@ -68,11 +71,12 @@ def validate_case(path: Path) -> list[str]:
                 if assertion_id in seen:
                     errors.append(f"{prefix}.id '{assertion_id}' is duplicated")
                 seen.add(assertion_id)
-            if assertion.get("operator") not in ALLOWED_OPERATORS:
+            operator = assertion.get("operator")
+            if not isinstance(operator, str) or operator not in ALLOWED_OPERATORS:
                 errors.append(f"{prefix}.operator must be one of {sorted(ALLOWED_OPERATORS)}")
             if not isinstance(assertion.get("required"), bool):
                 errors.append(f"{prefix}.required must be a boolean")
-            if assertion.get("operator") == "equals" and "expected" not in assertion:
+            if operator == "equals" and "expected" not in assertion:
                 errors.append(f"{prefix}.expected is required for equals")
     return errors
 
