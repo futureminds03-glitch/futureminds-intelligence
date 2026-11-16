@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "task_id": "notely.branded-share-image",
+  "task_version": 1,
+  "title": "Add branded image sharing for a Notely note",
+  "objective": "Implement a user-initiated way to export a note as an image with Notely branding, without disrupting existing note editing or sharing behavior.",
+  "agent_instruction": "Implement a share action that creates an image of the current note, includes the Notely wordmark 'NOTELY.', and exposes the native share flow where supported with a safe download fallback. Preserve the existing visual design and note content. Handle long notes and narrow screens. Do not redesign unrelated screens. Add automated tests for the export content, branding, and fallback behavior. Report exactly what changed and which tests were actually run.",
+  "execution_policy": {
+    "branch_only": true,
+    "pull_request_required": true,
+    "production_deployment_allowed": false,
+    "production_data_mutation_allowed": false,
+    "secrets_exposure_allowed": false
+  },
+  "allowed_paths": [
+    "src/",
+    "app/",
+    "components/",
+    "lib/",
+    "tests/",
+    "e2e/"
+  ],
+  "forbidden_actions": [
+    "Deploy to production or trigger a production release",
+    "Modify production data or run database migrations",
+    "Read, print, commit, or expose secrets and environment variable values",
+    "Disable authentication, authorization, security checks, or existing tests",
+    "Modify unrelated product features or perform a broad redesign",
+    "Claim a test passed unless its command completed successfully"
+  ],
+  "required_evidence": [
+    "source_revision",
+    "changed_files",
+    "ci_status",
+    "unit_test_result",
+    "share_image_test_result",
+    "agent_completion_summary"
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "revision-recorded",
+      "requirement": "The exact source revision evaluated is recorded.",
+      "evidence_key": "source_revision",
+      "operator": "is_non_empty_string",
+      "required": true
+    },
+    {
+      "id": "change-inventory",
+      "requirement": "The complete changed-file inventory is recorded.",
+      "evidence_key": "changed_files",
+      "operator": "is_non_empty_string",
+      "required": true
+    },
+    {
+      "id": "ci-green",
+      "requirement": "Required CI checks completed successfully.",
+      "evidence_key": "ci_status",
+      "operator": "equals",
+      "expected": "success",
+      "required": true
+    },
+    {
+      "id": "unit-tests",
+      "requirement": "Unit test execution result is recorded.",
+      "evidence_key": "unit_test_result",
+      "operator": "is_non_empty_string",
+      "required": true
+    },
+    {
+      "id": "share-export-tests",
+      "requirement": "Share-image-specific test execution result is recorded.",
+      "evidence_key": "share_image_test_result",
+      "operator": "is_non_empty_string",
+      "required": true
+    },
+    {
+      "id": "completion-summary",
+      "requirement": "The agent's completion summary is preserved for comparison with independent evidence.",
+      "evidence_key": "agent_completion_summary",
+      "operator": "is_non_empty_string",
+      "required": true
+    }
+  ]
+}
