@@ -51,3 +51,26 @@ The pilot does not yet launch coding agents, create sandboxes, authenticate scre
 - Unsafe execution-policy values and path traversal are rejected.
 - Acceptance criteria must reference declared evidence keys and supported deterministic operators.
 - CI runs the contract validator and its unit tests.
+
+## Collecting evidence from a real pull request
+
+The read-only adapter can collect evidence for a specific GitHub pull request:
+
+```bash
+export GITHUB_TOKEN="<read-only GitHub token>"
+python -m scripts.collect_pr_task_evidence \
+  --repository owner/repository \
+  --pull-request 123 \
+  --output evidence/pr-task-evidence.json
+
+python -m scripts.run_task_eval \
+  --contract benchmarks/task-contracts/notely-branded-share-image.v1.json \
+  --evidence evidence/pr-task-evidence.json \
+  --output evidence/task-evaluation-report.json
+```
+
+The token should be fine-grained and limited to the target repository with Metadata: read, Pull requests: read and Checks: read. The adapter does not need write permissions. It fetches the pull request head commit, changed files and check runs directly from GitHub. It refuses incomplete or potentially truncated file/check inventories.
+
+CI is considered successful only when all observed check runs have completed successfully. Unit-test and feature-specific evidence are only populated when matching completed check runs exist. A pending check or absent feature-specific test remains missing and therefore blocks the task evaluation. A failed check remains a failure.
+
+The optional `## Agent completion summary` section in the PR body is treated as an agent-authored claim, not independent proof. The report preserves that distinction. The adapter does not run the submitted code, validate browser behavior, or prove a feature works merely because CI is green.
