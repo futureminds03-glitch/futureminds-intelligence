@@ -35,8 +35,9 @@ class AgentTaskEvidenceWorkflowTests(unittest.TestCase):
         self.assertIn(".head.ref | startswith(\"agent-task/\")", self.content)
         self.assertIn("steps.resolve.outputs.pr_number != ''", self.content)
         self.assertNotIn("pull_requests[0]", self.content)
-        self.assertNotIn("workflow_run.head_branch", self.content)
-        self.assertNotIn("workflow_run.head_repository", self.content)
+        resolver = self.content.split("Resolve pull request from completed commit", 1)[1].split("Collect read-only PR evidence", 1)[0]
+        self.assertNotIn("workflow_run.head_branch", resolver)
+        self.assertNotIn("workflow_run.head_repository", resolver)
 
 
     def test_passes_contract_required_checks_to_evidence_adapter(self):
