@@ -4,7 +4,7 @@
 
 ## What the workflow proves
 
-The `.github/workflows/agent-sandbox-smoke.yml` workflow runs only after the trusted default-branch workflow named `Evaluation foundation checks` completes successfully. It does not check out or execute the triggering pull request's source code. It has no GitHub permissions, no secrets, and no token passed to the container.
+The `.github/workflows/agent-sandbox-smoke.yml` workflow runs only after the trusted default-branch workflow named `Evaluation foundation checks` completes successfully. It does not check out or execute the triggering pull request's source code. It requests only the GitHub `statuses: write` permission so a trusted post-run step can publish a pass/fail status against the triggering commit. The ephemeral token is used only by that trusted status step after the container exits; it is never passed to the container.
 
 The job runs on a disposable GitHub-hosted Linux runner and starts a pinned BusyBox image by immutable amd64 manifest digest. Inside the container it applies:
 
@@ -34,4 +34,4 @@ The workflow uses `workflow_run` and is defined on the default branch. It delibe
 
 ## Evidence
 
-The smoke job's GitHub Actions logs must contain `SANDBOX_PROOF=passed` and the output SHA-256. A completed job is evidence only for the controls explicitly tested above. It is not evidence of a fully secure agent execution environment.
+The smoke job's GitHub Actions logs must contain `SANDBOX_PROOF=passed` and the output SHA-256. The trusted post-run step publishes a `FutureMinds Intelligence / Disposable sandbox` commit status. A completed job is evidence only for the controls explicitly tested above. It is not evidence of a fully secure agent execution environment.
