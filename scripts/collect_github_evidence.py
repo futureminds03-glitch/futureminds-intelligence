@@ -94,16 +94,13 @@ def collect_evidence(repository: str, commit_sha: str, workflow_run: dict[str, A
             "completed_at": check.get("completed_at"),
         })
 
-    workflow_status = classify_workflow_result(workflow_run)
-    # Fail closed if any associated check is still running or did not succeed.
-    if not check_summaries:
-        test_result = "blocked"
-    elif any(item["status"] != "completed" for item in check_summaries):
-        test_result = "blocked"
-    elif any(item["conclusion"] != "success" for item in check_summaries):
-        test_result = "failed"
-    else:
-        test_result = workflow_status
+    if workflow_run.get("name") != "Evaluation foundation checks":
+        raise EvidenceCollectionError("Unexpected workflow name in completion event")
+
+    # The triggering workflow_run event is the authoritative result for this
+    # evaluation. Do not aggregate every commit check: this collector creates
+    # its own check run and would otherwise observe itself while in progress.
+    test_result = classify_workflow_result(workflow_run)
 
     files = commit.get("files", [])
     if not isinstance(files, list):
@@ -132,6 +129,7 @@ def collect_evidence(repository: str, commit_sha: str, workflow_run: dict[str, A
         "check_run_count": total_count,
         "check_runs": check_summaries,
         "test_result": test_result,
+        "test_result_source": "completed-workflow-run-event",
         "integrity_note": (
             "Commit identity and check-run metadata were read from GitHub's API. "
             "This records CI evidence; it does not prove application-level correctness."
