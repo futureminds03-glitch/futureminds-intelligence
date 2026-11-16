@@ -65,7 +65,7 @@ def validate_contract(path: Path) -> list[str]:
             errors.append(f"{path}: allowed_paths entries must be unique")
         for item in allowed_paths:
             if isinstance(item, str) and (item.startswith("/") or ".." in Path(item).parts):
-                errors.append(f"{path}: allowed_paths must not contain absolute paths or '..'")
+                errors.append(f"{path}: allowed_paths must be relative paths without absolute prefixes or '..' segments")
 
     forbidden = data.get("forbidden_actions")
     if isinstance(forbidden, list):
