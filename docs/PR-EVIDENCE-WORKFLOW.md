@@ -36,3 +36,11 @@ A `passed` result means the evidence assertions in this reference contract passe
 Use `agent-task/<short-task-name>` for PRs that should enter this reference evidence pipeline. The workflow currently uses one generic benchmark contract for demonstration; task-specific contract selection and authenticated tool-trace evidence are future work.
 
 The contract declares exact `required_ci_check_names`. Only those named checks contribute to the task's required CI/unit-test grade. This prevents the evidence collector's own in-progress check (and unrelated concurrent workflows) from contaminating its result. A missing or ambiguous required check remains blocked; the workflow does not silently broaden the allowlist.
+
+## Result semantics
+
+- `passed`: every required assertion has authenticated, completed evidence matching the contract.
+- `failed`: observed evidence contradicts a required assertion (for example, a required check completed with failure).
+- `blocked`: required evidence is absent, incomplete, pending or ambiguous.
+
+The agent's completion summary never changes an evidence grade by itself. A confident claim cannot turn missing or failed GitHub evidence into a pass.
