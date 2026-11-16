@@ -55,6 +55,13 @@ class AgentTaskEvidenceWorkflowTests(unittest.TestCase):
         self.assertIn("if: always() && steps.resolve.outputs.pr_number != ''", self.content)
         self.assertIn("PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}", self.content)
 
+
+    def test_publishes_discovery_state_when_pr_resolution_fails_or_skips(self):
+        self.assertIn("FutureMinds Intelligence / Agent task discovery", self.content)
+        self.assertIn("RESOLVE_OUTCOME", self.content)
+        self.assertIn("Task PR resolution failed", self.content)
+        self.assertIn("No eligible agent-task PR", self.content)
+
     def test_preserves_artifacts_and_status(self):
         self.assertIn("actions/upload-artifact@v4", self.content)
         self.assertIn("retention-days: 14", self.content)
