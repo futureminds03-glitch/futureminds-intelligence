@@ -16,7 +16,7 @@ class AgentSandboxSmokeWorkflowTests(unittest.TestCase):
         self.assertIn("types: [completed]", self.content)
 
     def test_has_no_github_permissions_or_checkout(self):
-        self.assertIn("permissions:\\n  statuses: write", self.content)
+        self.assertIn("permissions:\n  statuses: write", self.content)
         self.assertNotIn("actions/checkout", self.content)
         self.assertNotIn("secrets.", self.content)
         docker_section = self.content.split("      - name: Run constrained sandbox proof", 1)[1].split("      - name: Publish sandbox proof status", 1)[0]
