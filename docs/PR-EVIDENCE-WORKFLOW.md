@@ -36,3 +36,7 @@ A `passed` result means the evidence assertions in this reference contract passe
 Use `agent-task/<short-task-name>` for PRs that should enter this reference evidence pipeline. The workflow currently uses one generic benchmark contract for demonstration; task-specific contract selection and authenticated tool-trace evidence are future work.
 
 The contract declares exact `required_ci_check_names`. Only those named checks contribute to the task's required CI/unit-test grade. This prevents the evidence collector's own in-progress check (and unrelated concurrent workflows) from contaminating its result. A missing or ambiguous required check remains blocked; the workflow does not silently broaden the allowlist.
+
+## Required-check selection
+
+The reference contract declares the exact required check name, `Validate cases and unit tests`. The evaluator grades only this declared check for CI/unit-test success. Other concurrent workflows, including this evidence collector itself, do not change that grade. If the named check is absent, still running, failed or ambiguous, the result cannot pass.
