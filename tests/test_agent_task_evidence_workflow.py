@@ -35,7 +35,7 @@ class AgentTaskEvidenceWorkflowTests(unittest.TestCase):
         self.assertIn(".head.ref | startswith(\"agent-task/\")", self.content)
         self.assertIn("steps.resolve.outputs.pr_number != ''", self.content)
         self.assertNotIn("pull_requests[0]", self.content)
-        resolver = self.content.split("Resolve pull request from completed commit", 1)[1].split("Collect read-only PR evidence", 1)[0]
+        resolver = self.content.split("Resolve pull request from completed commit", 1)[1].split("Publish task discovery status", 1)[0]
         self.assertNotIn("workflow_run.head_branch", resolver)
         self.assertNotIn("workflow_run.head_repository", resolver)
 
@@ -54,6 +54,13 @@ class AgentTaskEvidenceWorkflowTests(unittest.TestCase):
     def test_status_is_published_only_after_a_task_pr_is_resolved(self):
         self.assertIn("if: always() && steps.resolve.outputs.pr_number != ''", self.content)
         self.assertIn("PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}", self.content)
+
+
+    def test_publishes_discovery_state_when_pr_resolution_fails_or_skips(self):
+        self.assertIn("FutureMinds Intelligence / Agent task discovery", self.content)
+        self.assertIn("RESOLVE_OUTCOME", self.content)
+        self.assertIn("Task PR resolution failed", self.content)
+        self.assertIn("No eligible agent-task PR", self.content)
 
     def test_preserves_artifacts_and_status(self):
         self.assertIn("actions/upload-artifact@v4", self.content)
